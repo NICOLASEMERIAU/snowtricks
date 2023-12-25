@@ -1,0 +1,8 @@
+{% for type, message_list in app.flashes %}
+    {% for message in message_list %}
+        <div class="alert alert-dismissible alert-{{ type }}">
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
