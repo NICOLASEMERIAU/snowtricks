@@ -7,6 +7,7 @@ use App\Form\TrickType;
 use App\Repository\TrickRepository;
 use App\Repository\TricksGroupRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,10 +16,25 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class TrickController extends AbstractController
 {
-    #[Route('/tricks', name: 'app_tricks')]
-    public function listTricks(TrickRepository $tricksRepository): Response
+    #[Route(
+        path: '/tricks',
+        name: 'app_tricks',
+        methods: ['GET']
+    )]
+    public function listTricks(
+        TrickRepository $tricksRepository,
+        PaginatorInterface $paginator,
+        Request $request
+    ): Response
     {
-        $tricks = $tricksRepository->findAll();
+        $query = $tricksRepository->findAll();
+
+        $tricks = $paginator->paginate(
+            $query, /* query NOT result */
+            $request->query->getInt('page', 1), /*page number*/
+            10 /*limit per page*/
+        );
+
         return $this->render('pages/trick/list_tricks.html.twig', [
             'tricks' => $tricks
         ]);
@@ -28,7 +44,8 @@ class TrickController extends AbstractController
     #[Route(
         path: '/trick/{id}',
         name: 'app_trick_one',
-        requirements: ['id' => '\d+']
+        requirements: ['id' => '\d+'],
+        methods: ['GET']
     )]
 
     public function oneTrick(
@@ -48,8 +65,10 @@ class TrickController extends AbstractController
 
     #[Route(
         path: '/trick/create',
-        name: 'app_trick_create'
-    )]
+        name: 'app_trick_create',
+        methods: ['GET', 'POST']
+
+)]
 
     public function createTrick(
         Request $request,
@@ -75,7 +94,7 @@ class TrickController extends AbstractController
             $entityManager->persist($trick);
             $entityManager->flush();
             $this->addFlash('success', 'Votre trick a été ajouté');
-            return $this->redirectToRoute(route: 'app_tricks');
+            return $this->redirectToRoute(route: 'app_trick_one', parameters: ['id' => $trick->getId()]);
         }
         else {
 
@@ -89,75 +108,76 @@ class TrickController extends AbstractController
     #[Route(
         path: '/trick/edit/{id}',
         name: 'app_trick_edit',
-        requirements: ['id' => '\d+']
+        requirements: ['id' => '\d+'],
+        methods: ['GET', 'POST']
     )]
     public function editTrick(
         TrickRepository $trickRepository,
+        Request $request,
+        EntityManagerInterface $entityManager,
         $id
 //        ,
 //        UploaderService $uploaderService,
 //        MailerService $mailer
     ): Response
     {
-//        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        $trick = $trickRepository->find($id);
+            $trick = $trickRepository->find($id);
+            $form = $this->createForm(TrickType::class, $trick);
+            $form->remove(name: 'created_at');
+            $form->remove(name: 'updated_at');
+            $form->remove(name: 'createdBy');
+            $form->handleRequest($request);
 
-        $form = $this->createForm(PersonneType::class, $personne);
-        $form->remove('createdAt');
-        $form->remove('updatedAt');
-        //mon formulaire va aller traiter la requete
-        $form->handleRequest($request);
-        if($form->isSubmitted() && $form->isValid()) {
-            //est ce que le formulaire a été soumis?
-            //si oui
-            //ajouter l'objet personne dans la bdd
+            if ($form->isSubmitted() && $form->isValid()) {
+                /** @var Trick $trick */
+                $trick = $form->getData();
+//                $photoFile = $form->get('photo')->getData();
 
-            $photoFile = $form->get('photo')->getData();
+//                if ($photoFile) {
+//                    $directory = $this->getParameter('personne_directory');
+//                    $personne->setImage($uploaderService->uploadFile($photoFile, $directory));
+//                }
 
-            // this condition is needed because the 'brochure' field is not required
-            // so the PDF file must be processed only when a file is uploaded
-            if ($photoFile) {
-                $directory = $this->getParameter('personne_directory');
-                $personne->setImage($uploaderService->uploadFile($photoFile, $directory));
+                $entityManager->persist($trick);
+                $entityManager->flush();
+                $this->addFlash('success', 'Votre trick a été mis à jour');
+                return $this->redirectToRoute(route: 'app_tricks');
             }
-
-            //afficher un message de succès
-            if($new) {
-                $message = " a été ajouté avec succès";
-                $personne->setCreatedBy($this->getUser());
-            } else {
-                $message = " a été mis à jour avec succès";
+            else {
+                return $this->render('pages/trick/trick_edit.html.twig', [
+                    'form' => $form->createView(),
+                ]);
             }
-            $manager = $doctrine->getManager();
-            $manager->persist($personne);
-            $manager->flush();
-
-            if($new) {
-                $addPersonneEvent = new AddPersonneEvent($personne);
-//                ON va maintenant dispatcher cet évènement
-                $this->dispatcher->dispatch($addPersonneEvent, AddPersonneEvent::ADD_PERSONNE_EVENT);
-            }
-
-
-            $this->addFlash(
-                type: 'success',
-                message: $personne->getName(). $message
-            );
-
-            //si non rediriger vers la liste des personnes
-            return $this->redirectToRoute(route: 'personne.list');
-
-
-        } else {
-            //si non , on affiche le formulaire
-
-
-            return $this->render('personne/add-personne.html.twig', [
-                'form' => $form->createView()
-            ]);
-        }
-
-
     }
 
+
+    #[Route(
+        path: '/trick/delete/{id}',
+        name: 'app_trick_delete',
+        requirements: ['id' => '\d+'],
+        methods: ['GET']
+
+    )]
+
+    public function deleteTrick(
+        TrickRepository $trickRepository,
+        EntityManagerInterface $entityManager,
+        $id
+    ): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        $trick = $trickRepository->find($id);
+
+        if ($trick) {
+            $entityManager->remove($trick);
+            $entityManager->flush();
+            $this->addFlash(type: 'success', message: 'Le trick a été supprimé');
+
+        } else {
+            $this->addFlash(type: 'error', message: 'Trick inexistant');
+        }
+
+        return $this->redirectToRoute(route: 'app_tricks');
+
+    }
 }

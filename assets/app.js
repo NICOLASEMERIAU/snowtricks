@@ -9,6 +9,6 @@ import './styles/bootstrap.min.css';
 import './styles/_variables.scss';
 import './styles/app.css';
 import './node_modules/@fortawesome/fontawesome-free/css/all.css'
-import './node_modules/@fortawesome/fontawesome-free/js/all.css'
+import './node_modules/@fortawesome/fontawesome-free/js/all.js'
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉')

@@ -4,8 +4,10 @@ namespace App\Entity;
 
 use App\Repository\VideoRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: VideoRepository::class)]
+#[UniqueEntity('video_link')]
 class Video
 {
     #[ORM\Id]
