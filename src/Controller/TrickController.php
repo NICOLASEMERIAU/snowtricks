@@ -5,11 +5,10 @@ namespace App\Controller;
 use App\Entity\Trick;
 use App\Form\TrickType;
 use App\Repository\TrickRepository;
-use App\Repository\TricksGroupRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -158,26 +157,20 @@ class TrickController extends AbstractController
         methods: ['GET']
 
     )]
-
     public function deleteTrick(
+        $id,
         TrickRepository $trickRepository,
-        EntityManagerInterface $entityManager,
-        $id
+        EntityManagerInterface $entityManager
     ): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
+
         $trick = $trickRepository->find($id);
 
         if ($trick) {
             $entityManager->remove($trick);
             $entityManager->flush();
-            $this->addFlash(type: 'success', message: 'Le trick a été supprimé');
-
-        } else {
-            $this->addFlash(type: 'error', message: 'Trick inexistant');
         }
-
         return $this->redirectToRoute(route: 'app_tricks');
-
     }
+
 }

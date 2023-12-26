@@ -5,35 +5,7 @@ Création d'un SnowTrick
 {% endblock %}
 
 {% block body %}
-    <div class="container" >
-        <h1 class="mt-4"> Création d'un trick</h1>
-
-        {{ form_start(form) }}
-        <div class="form-group">
-            {{ form_label(form.name) }}
-            {{ form_widget(form.name) }}
-            <div class="form-error">
-                {{ form_errors(form.name) }}
-            </div>
-        </div>
-        <div class="form-group">
-            {{ form_label(form.description) }}
-            {{ form_widget(form.description) }}
-            <div class="form-error">
-                {{ form_errors(form.description) }}
-            </div>
-        </div>
-        <div class="form-group">
-            {{ form_label(form.trickgroup) }}
-            {{ form_widget(form.trickgroup) }}
-            <div class="form-error">
-                {{ form_errors(form.trickgroup) }}
-            </div>
-        </div>
-        <div class="form-group">
-            {{ form_row(form.Editer) }}
-        </div>
-        {{ form_end(form) }}
-    </div>
+    <h1 class="text-center">Création d'un SnowTrick</h1>
+    {% include "/pages/trick/_trick_form.html.twig" %}
 {% endblock %}
 

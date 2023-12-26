@@ -35,7 +35,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute(route: 'app_tricks');
         }
         else {
-            return $this->render('pages/user/index.html.twig', [
+            return $this->render('pages/user/user_form.html.twig', [
                 'form' => $form->createView(),
             ]);
         }
