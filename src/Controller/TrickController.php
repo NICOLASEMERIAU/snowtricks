@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Trick;
 use App\Form\TrickType;
 use App\Repository\TrickRepository;
+use App\Service\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -71,7 +72,8 @@ class TrickController extends AbstractController
 
     public function createTrick(
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        MailerService $mailer
     ): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
@@ -92,6 +94,9 @@ class TrickController extends AbstractController
 
             $entityManager->persist($trick);
             $entityManager->flush();
+            $message = " a été ajouté avec succès dans les SNowTricks";
+            $mailMessage = $trick->getName().' '.$message;
+            $mailer->sendEmail(content: $mailMessage);
             $this->addFlash('success', 'Votre trick a été ajouté');
             return $this->redirectToRoute(route: 'app_trick_one', parameters: ['id' => $trick->getId()]);
         }
@@ -140,7 +145,7 @@ class TrickController extends AbstractController
                 $entityManager->persist($trick);
                 $entityManager->flush();
                 $this->addFlash('success', 'Votre trick a été mis à jour');
-                return $this->redirectToRoute(route: 'app_tricks');
+                return $this->redirectToRoute(route: 'app_trick_one', parameters: ['id' => $trick->getId()]);
             }
             else {
                 return $this->render('pages/trick/trick_edit.html.twig', [
