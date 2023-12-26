@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mise à jour du profil{% endblock %}
+
+{% block body %}
+    <h1 class="text-center">Mise à jour de mon profil</h1>
+
+    {% include 'partials/_flashes.html.twig' %}
+
+    <div class="container" >
+        {{ form_start(form) }}
+        <div class="form-group">
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email) }}
+            <div class="form-error">
+                {{ form_errors(form.email) }}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form_label(form.username) }}
+            {{ form_widget(form.username) }}
+            <div class="form-error">
+                {{ form_errors(form.username) }}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form_label(form.plainPassword.first) }}
+            {{ form_widget(form.plainPassword.first) }}
+            <div class="form-error">
+                {{ form_errors(form.plainPassword.first) }}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form_label(form.plainPassword.second) }}
+            {{ form_widget(form.plainPassword.second) }}
+            <div class="form-error">
+                {{ form_errors(form.plainPassword.second) }}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form_row(form.Valider) }}
+        </div>
+        {{ form_end(form) }}
+    </div>
+
+{% endblock %}

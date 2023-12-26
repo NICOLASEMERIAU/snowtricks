@@ -7,18 +7,41 @@
         <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
     {% endfor %}
 
-    <h1>Register</h1>
+    <h1 class="text-center">Inscription</h1>
+    <div class="container" >
+        {{ form_start(registrationForm) }}
+        <div class="form-group">
+            {{ form_label(registrationForm.email) }}
+            {{ form_widget(registrationForm.email) }}
+            <div class="form-error">
+                {{ form_errors(registrationForm.email) }}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form_label(registrationForm.username) }}
+            {{ form_widget(registrationForm.username) }}
+            <div class="form-error">
+                {{ form_errors(registrationForm.username) }}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form_label(registrationForm.plainPassword) }}
+            {{ form_widget(registrationForm.plainPassword) }}
+            <div class="form-error">
+                {{ form_errors(registrationForm.plainPassword) }}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form_label(registrationForm.agreeTerms) }}
+            {{ form_widget(registrationForm.agreeTerms) }}
+            <div class="form-error">
+                {{ form_errors(registrationForm.agreeTerms) }}
+            </div>
+        </div>
 
-    {{ form_errors(registrationForm) }}
-
-    {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.username) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
-
-        <button type="submit" class="btn">Register</button>
-    {{ form_end(registrationForm) }}
+        <div class="form-group">
+            {{ form_row(registrationForm.Valider) }}
+        </div>
+        {{ form_end(registrationForm) }}
+    </div>
 {% endblock %}

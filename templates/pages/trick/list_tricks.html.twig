@@ -20,15 +20,38 @@
                         <div class="card-body">
                             <a href="{{ path('app_trick_one', {id: trick.id}) }}" class="card-link"><i class="fa-solid fa-circle-info"></i></a>
                             {% if is_granted('ROLE_USER') %}
-                            <a href="{{ path('app_trick_edit', {id: trick.id}) }}" class="card-link"><i class="fa-solid fa-pen-to-square"></i></a>
-                            <a href="{{ path('app_trick_delete', {id: trick.id}) }}" class="card-link"><i class="fa-solid fa-trash-can"></i></a>
+                                <a href="{{ path('app_trick_edit', {id: trick.id}) }}" class="card-link"><i class="fa-solid fa-pen-to-square"></i></a>
+                                <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteTrickModal{{ trick.id }}">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+
                             {% endif %}
                         </div>
                     </div>
                 </div>
+            <!-- Modal -->
+            <div class="modal fade" id="deleteTrickModal{{ trick.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmation de la suppression du trick</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Pour confirmer la suppression, cliquer sur ce lien
+                            <a href="{{ path('app_trick_delete', {id: trick.id}) }}" class="card-link"><i class="fa-solid fa-trash-can"></i></a>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
     {% endfor %}
         </div>
     </div>
+
+
     <div class="navigation d-flex justify-content-center">
         {{ knp_pagination_render(tricks) }}
     </div>

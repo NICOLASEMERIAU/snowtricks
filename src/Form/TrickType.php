@@ -5,6 +5,8 @@ namespace App\Form;
 use App\Entity\Trick;
 use App\Entity\TricksGroup;
 use App\Entity\User;
+use App\Repository\TricksGroupRepository;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -47,6 +49,10 @@ class TrickType extends AbstractType
             ->add('trickgroup', EntityType::class, options :[
                 'class' => TricksGroup::class,
                 'choice_label' => 'name_group',
+                'query_builder' => function (TricksGroupRepository $er): QueryBuilder {
+                    return $er->createQueryBuilder('u')
+                        ->orderBy('u.name_group', 'ASC');
+                },
                 'attr' => [
                     'class' => 'form-control'
                 ],
