@@ -2,14 +2,21 @@
 
 namespace App\Controller;
 
+use App\Entity\Commentary;
 use App\Entity\Trick;
+use App\Entity\Image;
+use App\Form\CommentaryType;
 use App\Form\TrickType;
+use App\Repository\CommentaryRepository;
+use App\Repository\ImageRepository;
 use App\Repository\TrickRepository;
+use App\Repository\VideoRepository;
 use App\Service\MailerService;
+use App\Service\UploaderService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -42,25 +49,68 @@ class TrickController extends AbstractController
 
 
     #[Route(
-        path: '/trick/{id}',
+        path: '/trick/details/{name}',
         name: 'app_trick_one',
-        requirements: ['id' => '\d+'],
-        methods: ['GET']
+        methods: ['GET', 'POST']
     )]
 
     public function oneTrick(
         TrickRepository $tricksRepository,
-        $id
+        CommentaryRepository $commentaryRepository,
+        VideoRepository $videoRepository,
+        ImageRepository $imageRepository,
+        $name,
+        Request $request,
+        EntityManagerInterface $entityManager
     ): Response
     {
-        $trick = $tricksRepository->find($id);
-        $name_group = $trick->getTrickgroup()->getNameGroup();
-        $created_by_name = $trick->getCreatedBy()->getUsername();
-        return $this->render('pages/trick/one_trick.html.twig', [
-            'trick' => $trick,
-            'name_group' => $name_group,
-            'created_by_name' => $created_by_name
-        ]);
+        $trick = $tricksRepository->findOneBy(
+            criteria: ['name' => $name]
+        );
+        $commentaries = $commentaryRepository->findBy(
+            criteria: ['trick' => $trick->getId()],
+            orderBy: ['updated_at' => 'DESC']
+        );
+        $videos = $videoRepository->findBy(
+            criteria: ['mytrick' => $trick->getId()]
+        );
+        $images = $imageRepository->findBy(
+        criteria: ['trick' => $trick->getId()]
+    );
+        $commentary = new Commentary();
+        $commentaryForm = $this->createForm(CommentaryType::class, $commentary);
+        $commentaryForm->remove(name: 'created_at');
+        $commentaryForm->remove(name: 'updated_at');
+        $commentaryForm->remove(name: 'created_by');
+        $commentaryForm->remove(name: 'trick');
+
+        $commentaryForm->handleRequest($request);
+        if ($commentaryForm->isSubmitted() && $commentaryForm->isValid()) {
+            /** @var Trick $trick */
+
+            $commentary = $commentaryForm->getData();
+            $commentary->setCreatedBy($this->getUser());
+            $commentary->setTrick($trick);
+
+
+            $entityManager->persist($commentary);
+            $entityManager->flush();
+            return $this->redirectToRoute(route: 'app_trick_one', parameters: ['name' => $trick->getName()]);
+        }
+        else {
+
+            return $this->render('pages/trick/one_trick.html.twig', [
+                'trick' => $trick,
+                'commentaryForm' => $commentaryForm->createView(),
+                'commentaries' => $commentaries,
+                'videos' => $videos,
+                'images' => $images
+            ]);
+        }
+
+
+
+
     }
 
     #[Route(
@@ -98,7 +148,7 @@ class TrickController extends AbstractController
             $mailMessage = $trick->getName().' '.$message;
             $mailer->sendEmail(content: $mailMessage);
             $this->addFlash('success', 'Votre trick a été ajouté');
-            return $this->redirectToRoute(route: 'app_trick_one', parameters: ['id' => $trick->getId()]);
+            return $this->redirectToRoute(route: 'app_trick_one', parameters: ['name' => $trick->getName()]);
         }
         else {
 
@@ -117,15 +167,15 @@ class TrickController extends AbstractController
     )]
     public function editTrick(
         TrickRepository $trickRepository,
+        ImageRepository $imageRepository,
         Request $request,
         EntityManagerInterface $entityManager,
-        $id
-//        ,
-//        UploaderService $uploaderService,
-//        MailerService $mailer
+        $id,
+        UploaderService $uploaderService
     ): Response
     {
             $trick = $trickRepository->find($id);
+
             $form = $this->createForm(TrickType::class, $trick);
             $form->remove(name: 'created_at');
             $form->remove(name: 'updated_at');
@@ -135,17 +185,32 @@ class TrickController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
                 /** @var Trick $trick */
                 $trick = $form->getData();
-//                $photoFile = $form->get('photo')->getData();
 
-//                if ($photoFile) {
-//                    $directory = $this->getParameter('personne_directory');
-//                    $personne->setImage($uploaderService->uploadFile($photoFile, $directory));
-//                }
+                /** @var UploadedFile $mainimageFile */
+                $mainimageFile = $form->get('mainimageFile')->getData();
+                // this condition is needed because the 'image' field is not required
+                // so the file must be processed only when a file is uploaded
+                if ($mainimageFile) {
+                    $directory = $this->getParameter(name: 'images_trick_directory');
+                    $trick->setMainimage($uploaderService->uploadFile($mainimageFile, $directory));
+                }
+
+
+
+// essai de récupération des fichiers images envoyés
+
+//                $othersFiles = $form->get('otherFile')->getData();
+
+//                faire une bouche type foreach pour récupérer chaque fichier
+//                et récupérer chaque nom de fichier, lui ajouter un code unique
+// puis enregistrer la variable name de l'entité image
+//                et persister
+//                et recommencer pour chacun des fichiers images
 
                 $entityManager->persist($trick);
                 $entityManager->flush();
                 $this->addFlash('success', 'Votre trick a été mis à jour');
-                return $this->redirectToRoute(route: 'app_trick_one', parameters: ['id' => $trick->getId()]);
+                return $this->redirectToRoute(route: 'app_trick_one', parameters: ['name' => $trick->getName()]);
             }
             else {
                 return $this->render('pages/trick/trick_edit.html.twig', [

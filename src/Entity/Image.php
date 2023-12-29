@@ -4,11 +4,8 @@ namespace App\Entity;
 
 use App\Repository\ImageRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Validator\Constraints\Unique;
 
 #[ORM\Entity(repositoryClass: ImageRepository::class)]
-#[UniqueEntity('link')]
 class Image
 {
     #[ORM\Id]
@@ -16,32 +13,17 @@ class Image
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $link = null;
-
     #[ORM\ManyToOne(inversedBy: 'images')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Trick $trick = null;
 
-    #[ORM\ManyToOne(inversedBy: 'images')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $name = null;
+
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getLink(): ?string
-    {
-        return $this->link;
-    }
-
-    public function setLink(string $link): static
-    {
-        $this->link = $link;
-
-        return $this;
     }
 
     public function getTrick(): ?Trick
@@ -56,15 +38,14 @@ class Image
         return $this;
     }
 
-    public function getUser(): ?User
+    public function setName(?string $name): void
     {
-        return $this->user;
+        $this->name = $name;
     }
 
-    public function setUser(?User $user): static
+    public function getName(): ?string
     {
-        $this->user = $user;
-
-        return $this;
+        return $this->name;
     }
+
 }

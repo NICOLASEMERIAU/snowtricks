@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: TrickRepository::class)]
 #[UniqueEntity('name')]
 #[ORM\HasLifecycleCallbacks]
+
 class Trick
 {
     #[ORM\Id]
@@ -39,10 +40,10 @@ class Trick
     #[ORM\JoinColumn(nullable: true)]
     private ?User $created_by = null;
 
-    #[ORM\OneToMany(mappedBy: 'trick', targetEntity: Commentary::class)]
-    private Collection $commentaries;
+    #[ORM\OneToMany(mappedBy: 'trick', targetEntity: Commentary::class, cascade: ["persist", "remove"])]
+    private Collection $comments;
 
-    #[ORM\OneToMany(mappedBy: 'trick', targetEntity: Image::class)]
+    #[ORM\OneToMany(mappedBy: 'trick', targetEntity: Image::class, cascade: ['persist'])]
     private Collection $images;
 
     #[ORM\Column]
@@ -51,10 +52,13 @@ class Trick
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updated_at = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $mainimage = null;
+
     public function __construct()
     {
         $this->video = new ArrayCollection();
-        $this->commentaries = new ArrayCollection();
+        $this->comments = new ArrayCollection();
         $this->images = new ArrayCollection();
         $this->created_at = new \DateTimeImmutable();
         $this->updated_at = new \DateTime();
@@ -152,15 +156,15 @@ class Trick
     /**
      * @return Collection<int, Commentary>
      */
-    public function getCommentaries(): Collection
+    public function getComments(): Collection
     {
-        return $this->commentaries;
+        return $this->comments;
     }
 
-    public function addCommentary(Commentary $commentary): static
+    public function addComments(Commentary $commentary): static
     {
-        if (!$this->commentaries->contains($commentary)) {
-            $this->commentaries->add($commentary);
+        if (!$this->comments->contains($commentary)) {
+            $this->comments->add($commentary);
             $commentary->setTrick($this);
         }
 
@@ -169,7 +173,7 @@ class Trick
 
     public function removeCommentary(Commentary $commentary): static
     {
-        if ($this->commentaries->removeElement($commentary)) {
+        if ($this->comments->removeElement($commentary)) {
             // set the owning side to null (unless already changed)
             if ($commentary->getTrick() === $this) {
                 $commentary->setTrick(null);
@@ -229,6 +233,18 @@ class Trick
     public function setUpdatedAt(\DateTimeInterface $updated_at): static
     {
         $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    public function getMainimage(): ?string
+    {
+        return $this->mainimage;
+    }
+
+    public function setMainimage(?string $mainimage): static
+    {
+        $this->mainimage = $mainimage;
 
         return $this;
     }

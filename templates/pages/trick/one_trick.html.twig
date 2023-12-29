@@ -2,48 +2,85 @@
 
 {% block body %}
     <div class="container d-flex justify-content-center">
-    <div class="col mb-4 w-50 p-3 ">
-        <div class="card mb-3">
-            <h3 class="card-header">{{ trick.name }}</h3>
-            <div class="card-body">
-                <h5 class="card-title">Groupe : {{ name_group }}</h5>
-                <h6 class="card-subtitle text-muted">Créé le {{ trick.createdAt|date("d/m/Y") }} par {{ created_by_name }}</h6>
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="d-block user-select-none" width="100%" height="200" aria-label="Placeholder: Image cap" focusable="false" role="img" preserveAspectRatio="xMidYMid slice" viewBox="0 0 318 180" style="font-size:1.125rem;text-anchor:middle">
-                <rect width="100%" height="100%" fill="#868e96"></rect>
-                <text x="50%" y="50%" fill="#dee2e6" dy=".3em">Image cap</text>
-            </svg>
-            <div class="card-body">
-                <p class="card-text">{{ trick.description}}</p>
-            </div>
-            <div class="card-body">
-                {% if is_granted('ROLE_USER') %}
-                <a href="{{ path('app_trick_edit', {id: trick.id}) }}" class="card-link"><i class="fa-solid fa-pen-to-square"></i></a>
-                    <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteTrickModal{{ trick.id }}">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>                {% endif %}
-            </div>
-        </div>
-    </div>
-        <!-- Modal -->
-        <div class="modal fade" id="deleteTrickModal{{ trick.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmation de la suppression du trick</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="col mb-4 w-50 p-3 ">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <div class="row">
+                    <div class="col-10">
+                        <h3>{{ trick.name }}</h3>
                     </div>
-                    <div class="modal-body">
-                        Pour confirmer la suppression, cliquer sur ce lien
-                        <a href="{{ path('app_trick_delete', {id: trick.id}) }}" class="card-link"><i class="fa-solid fa-trash-can"></i></a>
+                    <div class="col-2">
+                        {% if is_granted('ROLE_USER') %}
+                            <a href="{{ path('app_trick_edit', {id: trick.id}) }}" class="card-link"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteTrickModal{{ trick.id }}">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        {% endif %}
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     </div>
+                </div>
+
+                <div class="card-body">
+                    <h5 class="card-title">Groupe : {{ trick.trickgroup.nameGroup }}</h5>
+                    <h6 class="card-subtitle text-muted">Créé le {{ trick.createdAt|date("d/m/Y") }} par {{ trick.createdBy.username }}</h6>
+                </div>
+
+                <img class=img-responsive src="{{ asset('images/tricks/'~trick.mainimage) }}" alt="image du trick" style=width:100%>
+                <div class="card-body">
+                    <p class="card-text">{{ trick.description}}</p>
                 </div>
             </div>
         </div>
     </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <img class="show-article-img" src="{{ asset('images/tricks/'~trick.mainimage)|imagine_filter('squared_thumbnail_medium') }}">
+                        </div>
+                    </div>
+                </div>
+<div class="container mt-4">
+    <div class="card border-primary mb-3">
+
+            {% if is_granted('ROLE_USER') %}
+            {#        formulaire d'ajout de commentaires si enregistré#}
+                <div class="container" >
+                    {{ form_start(commentaryForm) }}
+                    <div class="form-group">
+                        {{ form_label(commentaryForm.content) }}
+                        {{ form_widget(commentaryForm.content) }}
+                        <div class="form-error">
+                            {{ form_errors(commentaryForm.content) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form_row(commentaryForm.Commenter) }}
+                    </div>
+                    {{ form_end(commentaryForm) }}
+                </div>
+            {% endif %}
+
+    </div>
+</div>
+<div class="container mt-4">
+    <h3>Commentaires du trick : {{ trick.name }}</h3>
+</div>
+
+    {% for commentary in commentaries %}
+<div class="container mt-4">
+
+    <div class="card border-primary mb-3" style="max-width: 100%;">
+            <div class="card-header">Publié le {{ commentary.updatedAt|date("d/m/Y") }} par {{ commentary.createdBy.username }}</div>
+            <div class="card-body">
+                <p class="card-text">{{ commentary.content }}</p>
+            </div>
+        </div>
+</div>
+    {% endfor %}
+
+
+    {% include "/pages/trick/_trick_delete_modal.html.twig" %}
+
 {% endblock %}
 
 {% block title %}

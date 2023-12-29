@@ -22,7 +22,7 @@ class Commentary
     private ?Trick $trick = null;
 
     #[ORM\ManyToOne(inversedBy: 'commentaries')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $created_by = null;
 
     #[ORM\Column]
@@ -31,6 +31,14 @@ class Commentary
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updated_at = null;
 
+    #[ORM\ManyToOne(inversedBy: 'commentaries')]
+    private ?User $user = null;
+
+    public function __construct()
+    {
+        $this->created_at = new \DateTimeImmutable();
+        $this->updated_at = new \DateTime();
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -92,6 +100,18 @@ class Commentary
     public function setUpdatedAt(\DateTimeInterface $updated_at): static
     {
         $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }
