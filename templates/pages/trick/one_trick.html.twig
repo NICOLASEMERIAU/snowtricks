@@ -21,11 +21,11 @@
                 </div>
 
                 <div class="card-body">
-                    <h5 class="card-title">Groupe : {{ trick.trickgroup.nameGroup }}</h5>
-                    <h6 class="card-subtitle text-muted">Créé le {{ trick.createdAt|date("d/m/Y") }} par {{ trick.createdBy.username }}</h6>
+                    <h5 class="card-title">Groupe : {{ trick.tricksGroup.name}}</h5>
+                    <h6 class="card-subtitle text-muted">Créé le {{ trick.createdAt|date("d/m/Y") }} par {{ trick.user.username }}</h6>
                 </div>
 
-                <img class=img-responsive src="{{ asset('images/tricks/'~trick.mainimage) }}" alt="image du trick" style=width:100%>
+                <img class=img-responsive src="{{ asset('images/tricks/'~trick.imageName) }}" alt="image du trick" style=width:100%>
                 <div class="card-body">
                     <p class="card-text">{{ trick.description}}</p>
                 </div>
@@ -35,8 +35,28 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-sm-12">
-                            <img class="show-article-img" src="{{ asset('images/tricks/'~trick.mainimage)|imagine_filter('squared_thumbnail_medium') }}">
+                            <img class="show-article-img" src="{{ asset('images/tricks/'~trick.imageName)|imagine_filter('squared_thumbnail_medium') }}">
                         </div>
+                        {% for video in trick.videos %}
+                        <div class="col-sm-12">
+                            <iframe class="item-tricks" src="{{ video.link }}" frameborder="0"></iframe>
+
+
+                        </div>
+
+                        {% endfor %}
+                    </div>
+                    <div class="row">
+                        <section class="col-12 col-sm-6">
+                            <div class="mx-auto row d-flex flex-md-row justify-content-md-between justify-content-center">
+                                {% for video in trick.videos %}
+                                    <div class="card mt-4 mb-4">
+                                        <iframe class="item-tricks" src="{{ video.link }}" frameborder="0"></iframe>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </section>
+
                     </div>
                 </div>
 <div class="container mt-4">
@@ -70,7 +90,7 @@
 <div class="container mt-4">
 
     <div class="card border-primary mb-3" style="max-width: 100%;">
-            <div class="card-header">Publié le {{ commentary.updatedAt|date("d/m/Y") }} par {{ commentary.createdBy.username }}</div>
+            <div class="card-header">Publié le {{ commentary.updatedAt|date("d/m/Y") }} par {{ commentary.user.username }}</div>
             <div class="card-body">
                 <p class="card-text">{{ commentary.content }}</p>
             </div>

@@ -15,39 +15,27 @@
         </div>
     </div>
     <div class="form-group">
-        {{ form_label(form.trickgroup) }}
-        {{ form_widget(form.trickgroup) }}
+        {{ form_label(form.tricksGroup) }}
+        {{ form_widget(form.tricksGroup) }}
         <div class="form-error">
-            {{ form_errors(form.trickgroup) }}
+            {{ form_errors(form.tricksGroup) }}
         </div>
     </div>
-{#    <div class="form-group">#}
-{#        {{ form_label(form.mainimageFile) }}#}
-{#        {{ form_widget(form.mainimageFile) }}#}
-{#        <div class="form-error">#}
-{#            {{ form_errors(form.mainimageFile) }}#}
-{#        </div>#}
-{#    </div>#}
+
     <div class="form-group">
         <div class="row">
             <div class="col-sm-9">
-                {{ form_row(form.mainimageFile, {
+                {{ form_row(form.mainImageFile, {
                     attr: {
                         'placeholder': 'Select an article image'
                     }
                 }) }}
             </div>
-            <div class="col-sm-3">
-                {% if form.vars.data.mainimage|default %}
-
-                    <img src="{{ asset('images/tricks/'~form.vars.data.mainimage)|imagine_filter('squared_thumbnail_small') }}" height="100">
-                {% endif %}
-            </div>
         </div>
     </div>
     <div class="form-group">
         <h3>Images</h3>
-        <button type="button" class="add_item_link" data-collection-holder-class="images">Ajoute une image</button>
+        <button type="button" class="add_image_link" data-collection-holder-class="images">Ajoute une image</button>
         <ul class="images"
             data-index="{{ form.images|length > 0 ? form.images|last.vars.name + 1 : 0 }}"
             data-prototype="{{ form_widget(form.images.vars.prototype)|e('html_attr') }}"
@@ -56,6 +44,20 @@
                 <li>{{ form_row(image.name) }}</li>
             {% endfor %}
         </ul>
+    </div>
+
+    <div class="form-group">
+        <h3>Vidéos</h3>
+        <button type="button" class="add_video_link" data-collection-holder-class="video">Ajoute un lien vers une vidéo</button>
+        <ul class="video"
+            data-index="{{ form.videos|length > 0 ? form.videos|last.vars.name + 1 : 0 }}"
+            data-prototype="{{ form_widget(form.videos.vars.prototype)|e('html_attr') }}"
+        >
+            {% for video in form.videos %}
+                <li>{{ form_row(video.link) }}</li>
+            {% endfor %}
+        </ul>
+
     </div>
 
     <div class="form-group">
@@ -68,14 +70,14 @@
     document.addEventListener('DOMContentLoaded', () => {
         console.log('test');
         document
-            .querySelectorAll('.add_item_link')
+            .querySelectorAll('.add_image_link')
             .forEach(btn => {
                 btn.addEventListener("click", (e) => {
                     const collectionHolder = document.querySelector('.' + e.currentTarget.dataset.collectionHolderClass);
 
-                    const item = document.createElement('li');
+                    const image = document.createElement('li');
 
-                    item.innerHTML = collectionHolder
+                    image.innerHTML = collectionHolder
                         .dataset
                         .prototype
                         .replace(
@@ -83,34 +85,82 @@
                             collectionHolder.dataset.index
                         );
 
-                    collectionHolder.appendChild(item);
+                    collectionHolder.appendChild(image);
 
                     collectionHolder.dataset.index++;
                 })
             });
     })
 
+    // document.addEventListener('DOMContentLoaded', () => {
+    //     console.log('test');
+    //     document
+    //         .querySelectorAll('.add_video_link')
+    //         .forEach(btn => {
+    //             btn.addEventListener("click", (e) => {
+    //                 const collectionHolder = document.querySelector('.' + e.currentTarget.dataset.collectionHolderClass);
+    //
+    //                 const item = document.createElement('li');
+    //
+    //                 item.innerHTML = collectionHolder
+    //                     .dataset
+    //                     .prototype
+    //                     .replace(
+    //                         /__name__/g,
+    //                         collectionHolder.dataset.index
+    //                     );
+    //
+    //                 collectionHolder.appendChild(item);
+    //
+    //                 collectionHolder.dataset.index++;
+    //             })
+    //         });
+    // })
+
+
     document
-        .querySelectorAll('.add_item_link')
-        .forEach(btn => {
-            btn.addEventListener("click", addFormToCollection)
+        .querySelectorAll('ul.video li')
+        .forEach((video) => {
+            addVideoFormDeleteLink(video)
+        })
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('test');
+        document
+            .querySelectorAll('.add_video_link')
+            .forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    const collectionHolder = document.querySelector('.' + e.currentTarget.dataset.collectionHolderClass);
+
+                    const video = document.createElement('li');
+
+                    video.innerHTML = collectionHolder
+                        .dataset
+                        .prototype
+                        .replace(
+                            /__name__/g,
+                            collectionHolder.dataset.index
+                        );
+
+                    collectionHolder.appendChild(video);
+
+                    collectionHolder.dataset.index++;
+                    addVideoFormDeleteLink(video);
+                })
+            });
+    })
+
+
+    const addVideoFormDeleteLink = (video) => {
+        const removeFormButton = document.createElement('button');
+        removeFormButton.innerText = 'Delete this video';
+
+        video.append(removeFormButton);
+
+        removeFormButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            // remove the li for the tag form
+            video.remove();
         });
-
-    const addFormToCollection = (e) => {
-        const collectionHolder = document.querySelector('.' + e.currentTarget.dataset.collectionHolderClass);
-
-        const item = document.createElement('li');
-
-        item.innerHTML = collectionHolder
-            .dataset
-            .prototype
-            .replace(
-                /__name__/g,
-                collectionHolder.dataset.index
-            );
-
-        collectionHolder.appendChild(item);
-
-        collectionHolder.dataset.index++;
-    };
+    }
 </script>

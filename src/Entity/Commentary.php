@@ -23,21 +23,18 @@ class Commentary
 
     #[ORM\ManyToOne(inversedBy: 'commentaries')]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $created_by = null;
+    private ?User $user = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $created_at = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $updated_at = null;
-
-    #[ORM\ManyToOne(inversedBy: 'commentaries')]
-    private ?User $user = null;
+    private ?\DateTimeInterface $updatedAt = null;
 
     public function __construct()
     {
-        $this->created_at = new \DateTimeImmutable();
-        $this->updated_at = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTime();
     }
     public function getId(): ?int
     {
@@ -68,42 +65,6 @@ class Commentary
         return $this;
     }
 
-    public function getCreatedBy(): ?User
-    {
-        return $this->created_by;
-    }
-
-    public function setCreatedBy(?User $created_by): static
-    {
-        $this->created_by = $created_by;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
-    {
-        $this->created_at = $created_at;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
-    {
-        return $this->updated_at;
-    }
-
-    public function setUpdatedAt(\DateTimeInterface $updated_at): static
-    {
-        $this->updated_at = $updated_at;
-
-        return $this;
-    }
-
     public function getUser(): ?User
     {
         return $this->user;
@@ -112,6 +73,30 @@ class Commentary
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

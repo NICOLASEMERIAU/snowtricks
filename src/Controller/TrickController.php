@@ -67,21 +67,25 @@ class TrickController extends AbstractController
         $trick = $tricksRepository->findOneBy(
             criteria: ['name' => $name]
         );
-        $commentaries = $commentaryRepository->findBy(
-            criteria: ['trick' => $trick->getId()],
-            orderBy: ['updated_at' => 'DESC']
-        );
-        $videos = $videoRepository->findBy(
-            criteria: ['mytrick' => $trick->getId()]
-        );
-        $images = $imageRepository->findBy(
-        criteria: ['trick' => $trick->getId()]
-    );
+
+        if ($trick->getId()) {
+            $commentaries = $commentaryRepository->findBy(
+                criteria: ['trick' => $trick->getId()],
+                orderBy: ['updatedAt' => 'DESC']
+            );
+            $videos = $videoRepository->findBy(
+                criteria: ['trick' => $trick->getId()]
+            );
+            $images = $imageRepository->findBy(
+                criteria: ['trick' => $trick->getId()]
+            );
+        }
+
         $commentary = new Commentary();
         $commentaryForm = $this->createForm(CommentaryType::class, $commentary);
-        $commentaryForm->remove(name: 'created_at');
-        $commentaryForm->remove(name: 'updated_at');
-        $commentaryForm->remove(name: 'created_by');
+        $commentaryForm->remove(name: 'createdAt');
+        $commentaryForm->remove(name: 'updatedAt');
+        $commentaryForm->remove(name: 'user');
         $commentaryForm->remove(name: 'trick');
 
         $commentaryForm->handleRequest($request);
@@ -89,7 +93,7 @@ class TrickController extends AbstractController
             /** @var Trick $trick */
 
             $commentary = $commentaryForm->getData();
-            $commentary->setCreatedBy($this->getUser());
+            $commentary->setUser($this->getUser());
             $commentary->setTrick($trick);
 
 
@@ -123,24 +127,33 @@ class TrickController extends AbstractController
     public function createTrick(
         Request $request,
         EntityManagerInterface $entityManager,
-        MailerService $mailer
+        MailerService $mailer,
+        UploaderService $uploaderService
     ): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         $trick = new Trick();
         $form = $this->createForm(TrickType::class, $trick);
-        $form->remove(name: 'created_at');
-        $form->remove(name: 'updated_at');
-        $form->remove(name: 'createdBy');
+        $form->remove(name: 'createdAt');
+        $form->remove(name: 'updatedAt');
+        $form->remove(name: 'user');
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var Trick $trick */
 
             $trick = $form->getData();
-            $trick->setCreatedBy($this->getUser());
+            $trick->setUser($this->getUser());
 
+            /** @var UploadedFile $mainImageFile */
+            $mainImageFile = $form->get('mainImageFile')->getData();
+            // this condition is needed because the 'image' field is not required
+            // so the file must be processed only when a file is uploaded
+            if ($mainImageFile) {
+                $directory = $this->getParameter(name: 'images_trick_directory');
+                $trick->setImageName($uploaderService->uploadFile($mainImageFile, $directory));
+            }
 
             $entityManager->persist($trick);
             $entityManager->flush();
@@ -170,42 +183,53 @@ class TrickController extends AbstractController
         ImageRepository $imageRepository,
         Request $request,
         EntityManagerInterface $entityManager,
-        $id,
+        int $id,
         UploaderService $uploaderService
     ): Response
     {
             $trick = $trickRepository->find($id);
+            $images = $imageRepository->findBy(
+                criteria: [ 'trick' => $trick->getId()]
+            );
 
             $form = $this->createForm(TrickType::class, $trick);
-            $form->remove(name: 'created_at');
-            $form->remove(name: 'updated_at');
-            $form->remove(name: 'createdBy');
+            $form->remove(name: 'createdAt');
+            $form->remove(name: 'updatedAt');
+            $form->remove(name: 'user');
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
                 /** @var Trick $trick */
                 $trick = $form->getData();
 
-                /** @var UploadedFile $mainimageFile */
-                $mainimageFile = $form->get('mainimageFile')->getData();
+                /** @var UploadedFile $mainImageFile */
+                $mainImageFile = $form->get('mainImageFile')->getData();
                 // this condition is needed because the 'image' field is not required
                 // so the file must be processed only when a file is uploaded
-                if ($mainimageFile) {
+                if ($mainImageFile) {
                     $directory = $this->getParameter(name: 'images_trick_directory');
-                    $trick->setMainimage($uploaderService->uploadFile($mainimageFile, $directory));
+                    $trick->setImageName($uploaderService->uploadFile($mainImageFile, $directory));
                 }
 
+                // essai de récupération des fichiers images envoyés
+                foreach ($form->get('images') as $formChild) {
+                    $uploadedImages = $formChild->get('name')->getData();
+                    foreach ($uploadedImages as $uploadedImage) {
+                        $image = new Image();
+                        $image->setTrick($trick);
+                        $directory = $this->getParameter(name: 'images_trick_directory');
+                        $newFileName = $uploaderService->uploadFile($uploadedImage, $directory);
+                        $image->setName($newFileName);
+                        $entityManager->persist($image);
+                    }
+                }
+                // this condition is needed because the 'image' field is not required
+                // so the file must be processed only when a file is uploaded
+                if ($mainImageFile) {
+                    $directory = $this->getParameter(name: 'images_trick_directory');
+                    $trick->setImageName($uploaderService->uploadFile($mainImageFile, $directory));
+                }
 
-
-// essai de récupération des fichiers images envoyés
-
-//                $othersFiles = $form->get('otherFile')->getData();
-
-//                faire une bouche type foreach pour récupérer chaque fichier
-//                et récupérer chaque nom de fichier, lui ajouter un code unique
-// puis enregistrer la variable name de l'entité image
-//                et persister
-//                et recommencer pour chacun des fichiers images
 
                 $entityManager->persist($trick);
                 $entityManager->flush();
@@ -215,6 +239,7 @@ class TrickController extends AbstractController
             else {
                 return $this->render('pages/trick/trick_edit.html.twig', [
                     'form' => $form->createView(),
+                    'images' => $images
                 ]);
             }
     }

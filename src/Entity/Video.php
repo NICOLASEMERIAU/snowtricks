@@ -4,10 +4,8 @@ namespace App\Entity;
 
 use App\Repository\VideoRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: VideoRepository::class)]
-#[UniqueEntity('video_link')]
 class Video
 {
     #[ORM\Id]
@@ -16,37 +14,37 @@ class Video
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $video_link = null;
+    private ?string $link = null;
 
     #[ORM\ManyToOne(inversedBy: 'video')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Trick $mytrick = null;
+    private ?Trick $trick = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getVideoLink(): ?string
+    public function getLink(): ?string
     {
-        return $this->video_link;
+        return $this->link;
     }
 
-    public function setVideoLink(string $video_link): static
+    public function setLink(string $link): static
     {
-        $this->video_link = $video_link;
+        $this->link = $link;
 
         return $this;
     }
 
-    public function getMytrick(): ?Trick
+    public function getTrick(): ?Trick
     {
-        return $this->mytrick;
+        return $this->trick;
     }
 
-    public function setMytrick(?Trick $mytrick): static
+    public function setTrick(?Trick $trick): static
     {
-        $this->mytrick = $mytrick;
+        $this->trick = $trick;
 
         return $this;
     }

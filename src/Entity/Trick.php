@@ -30,15 +30,15 @@ class Trick
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\OneToMany(mappedBy: 'mytrick', targetEntity: Video::class)]
-    private Collection $video;
+    #[ORM\OneToMany(mappedBy: 'trick', targetEntity: Video::class, cascade: ['persist'])]
+    private Collection $videos;
 
     #[ORM\ManyToOne(inversedBy: 'tricks')]
-    private ?TricksGroup $trickgroup = null;
+    private ?TricksGroup $tricksGroup = null;
 
     #[ORM\ManyToOne(inversedBy: 'tricks')]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $created_by = null;
+    private ?User $user = null;
 
     #[ORM\OneToMany(mappedBy: 'trick', targetEntity: Commentary::class, cascade: ["persist", "remove"])]
     private Collection $comments;
@@ -47,27 +47,27 @@ class Trick
     private Collection $images;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $created_at = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $updated_at = null;
+    private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $mainimage = null;
+    private ?string $imageName = null;
 
     public function __construct()
     {
-        $this->video = new ArrayCollection();
+        $this->videos = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->images = new ArrayCollection();
-        $this->created_at = new \DateTimeImmutable();
-        $this->updated_at = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTime();
     }
 
     #[ORM\PrePersist]
     public function setUpdateAtValue(): void
     {
-        $this->updated_at = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -102,16 +102,16 @@ class Trick
     /**
      * @return Collection<int, Video>
      */
-    public function getVideo(): Collection
+    public function getVideos(): Collection
     {
-        return $this->video;
+        return $this->videos;
     }
 
     public function addVideo(Video $video): static
     {
-        if (!$this->video->contains($video)) {
-            $this->video->add($video);
-            $video->setMytrick($this);
+        if (!$this->videos->contains($video)) {
+            $this->videos->add($video);
+            $video->setTrick($this);
         }
 
         return $this;
@@ -119,36 +119,36 @@ class Trick
 
     public function removeVideo(Video $video): static
     {
-        if ($this->video->removeElement($video)) {
+        if ($this->videos->removeElement($video)) {
             // set the owning side to null (unless already changed)
-            if ($video->getMytrick() === $this) {
-                $video->setMytrick(null);
+            if ($video->getTrick() === $this) {
+                $video->setTrick(null);
             }
         }
 
         return $this;
     }
 
-    public function getTrickgroup(): ?TricksGroup
+    public function getTricksGroup(): ?TricksGroup
     {
-        return $this->trickgroup;
+        return $this->tricksGroup;
     }
 
-    public function setTrickgroup(?TricksGroup $trickgroup): static
+    public function setTricksGroup(?TricksGroup $tricksGroup): static
     {
-        $this->trickgroup = $trickgroup;
+        $this->tricksGroup = $tricksGroup;
 
         return $this;
     }
 
-    public function getCreatedBy(): ?User
+    public function getUser(): ?User
     {
-        return $this->created_by;
+        return $this->user;
     }
 
-    public function setCreatedBy(?User $created_by): static
+    public function setUser(?User $user): static
     {
-        $this->created_by = $created_by;
+        $this->user = $user;
 
         return $this;
     }
@@ -215,36 +215,36 @@ class Trick
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
-        $this->created_at = $created_at;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeInterface
     {
-        return $this->updated_at;
+        return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updated_at): static
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
     {
-        $this->updated_at = $updated_at;
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
-    public function getMainimage(): ?string
+    public function getImageName(): ?string
     {
-        return $this->mainimage;
+        return $this->imageName;
     }
 
-    public function setMainimage(?string $mainimage): static
+    public function setImageName(?string $imageName): static
     {
-        $this->mainimage = $mainimage;
+        $this->imageName = $imageName;
 
         return $this;
     }

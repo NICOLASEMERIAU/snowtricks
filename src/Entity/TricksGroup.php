@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: TricksGroupRepository::class)]
-#[UniqueEntity('name_group')]
+#[UniqueEntity('name')]
 class TricksGroup
 {
     #[ORM\Id]
@@ -18,9 +18,9 @@ class TricksGroup
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $name_group = null;
+    private ?string $name = null;
 
-    #[ORM\OneToMany(mappedBy: 'trickgroup', targetEntity: Trick::class)]
+    #[ORM\OneToMany(mappedBy: 'tricksGroup', targetEntity: Trick::class)]
     private Collection $tricks;
 
     public function __construct()
@@ -33,14 +33,14 @@ class TricksGroup
         return $this->id;
     }
 
-    public function getNameGroup(): ?string
+    public function getName(): ?string
     {
-        return $this->name_group;
+        return $this->name;
     }
 
-    public function setNameGroup(string $name_group): static
+    public function setName(string $name): static
     {
-        $this->name_group = $name_group;
+        $this->name = $name;
 
         return $this;
     }
@@ -57,7 +57,7 @@ class TricksGroup
     {
         if (!$this->tricks->contains($trick)) {
             $this->tricks->add($trick);
-            $trick->setTrickgroup($this);
+            $trick->setTricksGroup($this);
         }
 
         return $this;
@@ -67,8 +67,8 @@ class TricksGroup
     {
         if ($this->tricks->removeElement($trick)) {
             // set the owning side to null (unless already changed)
-            if ($trick->getTrickgroup() === $this) {
-                $trick->setTrickgroup(null);
+            if ($trick->getTricksGroup() === $this) {
+                $trick->setTricksGroup(null);
             }
         }
 

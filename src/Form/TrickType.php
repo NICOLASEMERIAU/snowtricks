@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Entity\Image;
 use App\Entity\Trick;
 use App\Entity\TricksGroup;
 use App\Entity\User;
@@ -12,16 +13,22 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\NotNull;
 
 class TrickType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        /** @var Trick|null $trick */
+        $trick = $options['data'] ?? null;
+        $isEdit = $trick && $trick->getId();
+
         $builder
             ->add('name', TextType::class, [
                 'attr' => [
@@ -38,7 +45,7 @@ class TrickType extends AbstractType
                     new Assert\NotBlank()
                 ]
             ])
-            ->add('description', TextType::class, options: [
+            ->add('description', TextareaType::class, options: [
                 'attr' => [
                     'class' => 'form-control'
                 ],
@@ -46,13 +53,17 @@ class TrickType extends AbstractType
                 'label_attr' => [
                     'class' => 'form-label mt-4'
                 ],
+                'constraints' => [
+                    new Assert\Length(['min' => 2]),
+                    new Assert\NotBlank()
+                ]
             ])
-            ->add('trickgroup', EntityType::class, options :[
+            ->add('tricksGroup', EntityType::class, options :[
                 'class' => TricksGroup::class,
-                'choice_label' => 'name_group',
+                'choice_label' => 'name',
                 'query_builder' => function (TricksGroupRepository $er): QueryBuilder {
                     return $er->createQueryBuilder('u')
-                        ->orderBy('u.name_group', 'ASC');
+                        ->orderBy('u.name', 'ASC');
                 },
                 'attr' => [
                     'class' => 'form-control'
@@ -61,37 +72,56 @@ class TrickType extends AbstractType
                 'label_attr' => [
                     'class' => 'form-label mt-4'
                 ],
+            ]);
+
+        $imageConstraints = [
+            new File([
+                'maxSize' => '5M',
+                'mimeTypes' => [
+                    'image/jpeg',
+                    'image/jpg',
+                    'image/png'
+                ],
+                'mimeTypesMessage' => 'Les fichiers jpeg, jpg et png sont autorisés',
             ])
-            ->add('createdBy', EntityType::class, options :[
-                'class' => User::class,
-                'choice_label' => 'username',
-            ])
-            ->add(child: 'mainimage')
-            ->add('mainimageFile', FileType::class, [
+        ];
+
+        if (!$isEdit || !$trick->getImageName()) {
+            $imageConstraints[] = new NotNull([
+                'message' => 'Une image est requise pour créer ce trick',
+            ]);
+        }
+
+        $builder
+            ->add('mainImageFile', FileType::class, [
                 'label' => 'Votre image principale du trick (jpeg, jpg, png uniquement)',
+                'label_attr' => [
+                    'class' => 'form-label mt-4'
+                ],
                 // unmapped means that this field is not associated to any entity property
                 'mapped' => false,
-
+                'attr' => [
+                    'class' => 'btn btn-primary mt-4'
+                ],
                 // make it optional so you don't have to re-upload the PDF file
                 // every time you edit the Product details
                 'required' => false,
 
                 // unmapped fields can't define their validation using attributes
                 // in the associated entity, so you can use the PHP constraint classes
-                'constraints' => [
-                    new File([
-                        'maxSize' => '1024k',
-                        'mimeTypes' => [
-                            'image/jpeg',
-                            'image/jpg',
-                            'image/png'
-                        ],
-                        'mimeTypesMessage' => 'Les fichiers jpeg, jpg et png sont autorisés',
-                    ])
-                ],
+                'constraints' => $imageConstraints
+
             ])
             ->add('images', type: CollectionType::class, options: [
+                'mapped' => false,
                 'entry_type' => ImageType::class,
+                'entry_options' => ['label' => false],
+                'allow_add' => true,
+                'by_reference' => false,
+                'allow_delete' => true,
+            ])
+            ->add('videos', type: CollectionType::class, options: [
+                'entry_type' => VideoType::class,
                 'entry_options' => ['label' => false],
                 'allow_add' => true,
                 'by_reference' => false,
