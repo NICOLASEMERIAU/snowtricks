@@ -21,30 +21,32 @@
             {{ form_errors(form.tricksGroup) }}
         </div>
     </div>
-
     <div class="form-group">
-        <div class="row">
-            <div class="col-sm-9">
-                {{ form_row(form.mainImageFile, {
-                    attr: {
-                        'placeholder': 'Select an article image'
-                    }
-                }) }}
-            </div>
+        {{ form_label(form.imageFile) }}
+        {{ form_widget(form.imageFile) }}
+        <div class="form-error">
+            {{ form_errors(form.imageFile) }}
         </div>
     </div>
+
     <div class="form-group">
         <h3>Images</h3>
-        <button type="button" class="add_image_link" data-collection-holder-class="images">Ajoute une image</button>
-        <ul class="images"
+        <button type="button" class="add_image_link" data-collection-holder-class="image">Ajoute une image</button>
+        <ul class="image"
             data-index="{{ form.images|length > 0 ? form.images|last.vars.name + 1 : 0 }}"
             data-prototype="{{ form_widget(form.images.vars.prototype)|e('html_attr') }}"
         >
             {% for image in form.images %}
-                <li>{{ form_row(image.name) }}</li>
+                            <li>
+                                {{ form_row(image.name) }}
+                                <img class="img-fluid" src="/images/tricks/{{ image.vars.data.name }}" alt="image snowboard freestyle" style=width:50%>
+                            </li>
+
+
             {% endfor %}
         </ul>
     </div>
+
 
     <div class="form-group">
         <h3>Vidéos</h3>
@@ -67,8 +69,11 @@
 </div>
 
 <script>
+
+
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('test');
+
+
         document
             .querySelectorAll('.add_image_link')
             .forEach(btn => {
@@ -88,44 +93,13 @@
                     collectionHolder.appendChild(image);
 
                     collectionHolder.dataset.index++;
+                    addFormDeleteLink(image, 'image');
+
                 })
             });
-    })
-
-    // document.addEventListener('DOMContentLoaded', () => {
-    //     console.log('test');
-    //     document
-    //         .querySelectorAll('.add_video_link')
-    //         .forEach(btn => {
-    //             btn.addEventListener("click", (e) => {
-    //                 const collectionHolder = document.querySelector('.' + e.currentTarget.dataset.collectionHolderClass);
-    //
-    //                 const item = document.createElement('li');
-    //
-    //                 item.innerHTML = collectionHolder
-    //                     .dataset
-    //                     .prototype
-    //                     .replace(
-    //                         /__name__/g,
-    //                         collectionHolder.dataset.index
-    //                     );
-    //
-    //                 collectionHolder.appendChild(item);
-    //
-    //                 collectionHolder.dataset.index++;
-    //             })
-    //         });
-    // })
 
 
-    document
-        .querySelectorAll('ul.video li')
-        .forEach((video) => {
-            addVideoFormDeleteLink(video)
-        })
 
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('test');
         document
             .querySelectorAll('.add_video_link')
             .forEach(btn => {
@@ -145,22 +119,36 @@
                     collectionHolder.appendChild(video);
 
                     collectionHolder.dataset.index++;
-                    addVideoFormDeleteLink(video);
+                    addFormDeleteLink(video, 'video');
                 })
             });
+
+        const addFormDeleteLink = (element, type) => {
+            const removeFormButton = document.createElement('button');
+            removeFormButton.innerText = 'Delete this ' + type;
+            element.append(removeFormButton);
+
+            removeFormButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                // remove the li for the tag form
+                element.remove();
+            });
+        }
+
+        document
+            .querySelectorAll('ul.image li')
+            .forEach((image) => {
+                addFormDeleteLink(image, 'image')
+            })
+
+        document
+            .querySelectorAll('ul.video li')
+            .forEach((video) => {
+                addFormDeleteLink(video, 'video')
+            })
+
+
     })
 
 
-    const addVideoFormDeleteLink = (video) => {
-        const removeFormButton = document.createElement('button');
-        removeFormButton.innerText = 'Delete this video';
-
-        video.append(removeFormButton);
-
-        removeFormButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            // remove the li for the tag form
-            video.remove();
-        });
-    }
 </script>

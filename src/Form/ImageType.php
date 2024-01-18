@@ -11,6 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
 
 class ImageType extends AbstractType
@@ -37,21 +38,6 @@ class ImageType extends AbstractType
                     new Assert\Valid()
                 ],
             ])
-//            ->add('name', TextType::class, [
-//                'attr' => [
-//                    'class' => 'form-control',
-//                    'minlength' => '2',
-//                    'maxlength' => '50'
-//                ],
-//                'label' => 'Nom de la photo',
-//                'label_attr' => [
-//                    'class' => 'form-label mt-4'
-//                ],
-//                'constraints' => [
-//                    new Assert\Length(['min' => 2, 'max' => 100]),
-//                    new Assert\NotBlank()
-//                ]
-//            ])
         ;
     }
 

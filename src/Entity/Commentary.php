@@ -22,7 +22,7 @@ class Commentary
     private ?Trick $trick = null;
 
     #[ORM\ManyToOne(inversedBy: 'commentaries')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
     #[ORM\Column]

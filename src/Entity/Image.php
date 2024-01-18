@@ -14,7 +14,7 @@ class Image
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'images')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Trick $trick = null;
 
     #[ORM\Column(length: 255, nullable: true)]

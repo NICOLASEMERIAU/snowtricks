@@ -9,8 +9,8 @@
                     <div class="col-10">
                         <h3>{{ trick.name }}</h3>
                     </div>
-                    <div class="col-2">
-                        {% if is_granted('ROLE_USER') %}
+                    <div class="col-lg-2 col-sm-1">
+                        {% if is_granted('ROLE_USER') and trick.user == app.user%}
                             <a href="{{ path('app_trick_edit', {id: trick.id}) }}" class="card-link"><i class="fa-solid fa-pen-to-square"></i></a>
                             <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#deleteTrickModal{{ trick.id }}">
                                 <i class="fa-solid fa-trash-can"></i>
@@ -25,40 +25,37 @@
                     <h6 class="card-subtitle text-muted">Créé le {{ trick.createdAt|date("d/m/Y") }} par {{ trick.user.username }}</h6>
                 </div>
 
-                <img class=img-responsive src="{{ asset('images/tricks/'~trick.imageName) }}" alt="image du trick" style=width:100%>
+                <img class=img-responsive src="{{ vich_uploader_asset(trick, 'imageFile') }}" alt="image du trick" style=width:50%>
                 <div class="card-body">
                     <p class="card-text">{{ trick.description}}</p>
                 </div>
             </div>
         </div>
     </div>
-                <div class="container">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <img class="show-article-img" src="{{ asset('images/tricks/'~trick.imageName)|imagine_filter('squared_thumbnail_medium') }}">
-                        </div>
-                        {% for video in trick.videos %}
-                        <div class="col-sm-12">
-                            <iframe class="item-tricks" src="{{ video.link }}" frameborder="0"></iframe>
 
-
-                        </div>
-
-                        {% endfor %}
-                    </div>
-                    <div class="row">
-                        <section class="col-12 col-sm-6">
-                            <div class="mx-auto row d-flex flex-md-row justify-content-md-between justify-content-center">
-                                {% for video in trick.videos %}
-                                    <div class="card mt-4 mb-4">
-                                        <iframe class="item-tricks" src="{{ video.link }}" frameborder="0"></iframe>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </section>
-
+    <div class="container">
+        <h3>Quelques images supplémentaires</h3>
+        <div class="row row-cols-lg-5 row-cols-sm-1">
+            {% for image in trick.images %}
+                <div class="col mb-4">
+                    <div class="card mb-3">
+                        <img class=img-responsive src="/images/tricks/{{ image.name }}" alt="autre image du trick" style=width:100%>
                     </div>
                 </div>
+            {% endfor %}
+        </div>
+        <h3>Et des vidéos pour le plaisir</h3>
+        <div class="row row-cols-sm-1">
+             {% for video in trick.videos %}
+                <div class="col mb-4">
+                    <div class="card mb-3">
+                        <iframe class="item-tricks" src="{{ video.link }}"></iframe>
+                    </div>
+                </div>
+             {% endfor %}
+        </div>
+
+
 <div class="container mt-4">
     <div class="card border-primary mb-3">
 
@@ -86,7 +83,7 @@
     <h3>Commentaires du trick : {{ trick.name }}</h3>
 </div>
 
-    {% for commentary in commentaries %}
+    {% for commentary in commentaries| slice(0,5) %}
 <div class="container mt-4">
 
     <div class="card border-primary mb-3" style="max-width: 100%;">
@@ -97,7 +94,10 @@
         </div>
 </div>
     {% endfor %}
-
+    <div class="row text-center m-5">
+        <button id="loadMoreComments" class="btn btn-dark col-md-6 col-8 mx-auto">Voir plus de commentaires
+        </button>
+    </div>
 
     {% include "/pages/trick/_trick_delete_modal.html.twig" %}
 
@@ -107,3 +107,31 @@
     {{ trick.name }}
 {% endblock %}
 
+{% block script %}
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        click = 0;
+
+        function loadMoreComments(event) {
+            event.preventDefault();
+            click++;
+            var start = 5 * click;
+            const url = "{{ path('app_trick_one', {slug: trick.slug}) }}/" + start;
+
+            axios.get(url).then(function (response) {
+                $("#comments").append(response.data);
+            }).catch(function (error) {
+                if (response.status === 403) {
+                    window.alert("Vous n'êtes pas autorisé à effectuer cette action !");
+                } else if (response.status === 404) {
+                    window.alert("La page appelée n'existe pas");
+                } else {
+                    window.alert("Une erreur est survenue !");
+                }
+            });
+        }
+
+        document.getElementById("loadMoreComments").addEventListener("click", loadMoreComments);
+    </script>
+
+{% endblock %}

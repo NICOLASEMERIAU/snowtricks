@@ -20,6 +20,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotNull;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class TrickType extends AbstractType
 {
@@ -45,7 +46,7 @@ class TrickType extends AbstractType
                     new Assert\NotBlank()
                 ]
             ])
-            ->add('description', TextareaType::class, options: [
+            ->add('description',TextareaType::class, options: [
                 'attr' => [
                     'class' => 'form-control'
                 ],
@@ -93,27 +94,15 @@ class TrickType extends AbstractType
         }
 
         $builder
-            ->add('mainImageFile', FileType::class, [
+            ->add(child: 'imageFile', type: VichImageType::class, options: [
                 'label' => 'Votre image principale du trick (jpeg, jpg, png uniquement)',
+                'required' => false,
                 'label_attr' => [
                     'class' => 'form-label mt-4'
                 ],
-                // unmapped means that this field is not associated to any entity property
-                'mapped' => false,
-                'attr' => [
-                    'class' => 'btn btn-primary mt-4'
-                ],
-                // make it optional so you don't have to re-upload the PDF file
-                // every time you edit the Product details
-                'required' => false,
-
-                // unmapped fields can't define their validation using attributes
-                // in the associated entity, so you can use the PHP constraint classes
                 'constraints' => $imageConstraints
-
             ])
             ->add('images', type: CollectionType::class, options: [
-                'mapped' => false,
                 'entry_type' => ImageType::class,
                 'entry_options' => ['label' => false],
                 'allow_add' => true,

@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -19,6 +20,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups('trick')]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
@@ -39,27 +41,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private $isVerified = false;
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private string $imageFilename;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commentary::class)]
     private Collection $commentaries;
 
+
     public function __construct()
     {
         $this->commentaries = new ArrayCollection();
-    }
-
-    public function getImageFilename(): string
-    {
-        return $this->imageFilename;
-    }
-
-    public function setImageFilename(string $imageFilename): self
-    {
-        $this->imageFilename = $imageFilename;
-
-        return $this;
     }
 
     public function getId(): ?int
@@ -185,5 +174,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
 }
